@@ -20,16 +20,21 @@ class Piece:
 
 ############################################################
 # OPTIONAL EXTRA: ASCII board visualizer (not core answer) #
-# You can remove/comment this section and the rest will run #
+# I thought this would be a nice touch given the context of the "game", and it wasn't too hard to add #
 ############################################################
 class Board:
     def __init__(self, size: int = 8):
         self.size = size
         self._ps: list[Piece] = []
         self._show = False  # ascii toggle
+        self._history: list[tuple] = []  # track all moves
 
     def set_show(self, v: bool):
         self._show = v
+    
+    @property
+    def history(self) -> list[tuple]:
+        return self._history
 
     def ascii(self):
         # make empty
@@ -61,7 +66,9 @@ class Board:
     def move_piece(self, pc: Piece, np: Position):
         if self.is_occupied(np):
             raise ValueError("occ: " + np.to_string())
+        op = pc.pos
         pc.pos = np
+        self._history.append((pc.n, op.to_string(), np.to_string()))
 
 
 
@@ -99,3 +106,12 @@ class ComplexGame(BaseGame):
             print(f"{i}: {pc.n} {o.to_string()}->{np.to_string()}")
             if self._show:
                 self._b.ascii()
+    
+    def print_history(self):
+        """Print all moves made during the game."""
+        if not self._b:
+            raise RuntimeError("setup")
+        print("\n=== Game History ===")
+        for i, (piece, from_pos, to_pos) in enumerate(self._b.history):
+            print(f"{i}: {piece} {from_pos} -> {to_pos}")
+        print(f"Total moves: {len(self._b.history)}")
